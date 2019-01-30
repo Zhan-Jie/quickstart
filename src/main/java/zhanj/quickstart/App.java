@@ -69,7 +69,7 @@ public class App {
             String app = readResourceFile("App_java");
             params = findParams(app);
             result = generate(app, params, model);
-            writeToFile(result, sourceDir + "/App.java");
+            writeToFile(result, sourceDir + "/" + mainClass + ".java");
 
             System.out.printf("project '%s' is generated in current directory.%n", artifactId);
             System.out.println("run command 'mvn package' to generate executable jar archive with dependencies.");
@@ -81,11 +81,17 @@ public class App {
     }
 
     private static String checkParams(String artifactId, String groupId, String mainClass, String version) {
-        if (artifactId.length() > 20 || !artifactId.matches("[a-zA-Z\\-]+")) {
+        if (artifactId.length() > 20 || !artifactId.matches("[a-zA-Z0-9\\-]+")) {
             return "'artifactId' consists of characters from 'a-z A-Z -' and can not be more than 20 characters";
         }
-        if (groupId.length() > 32 || !groupId.matches("[a-zA-Z\\.]+")) {
+        if (groupId.length() > 32 || !groupId.matches("[a-zA-Z0-9\\.]+")) {
             return "'groupId' consists of characters from 'a-z A-Z .' and can not be more than 32 characters";
+        }
+        if (mainClass.length() > 15 || !mainClass.matches("[A-Z]+[a-zA-Z0-9]*")) {
+            return "'mainClass' consists of characters from 'a-z A-Z 0-9', starts with a capital character and can not be more than 15 characters";
+        }
+        if (version.length() > 15) {
+            return "'version' can not be more than 15 characters";
         }
         return null;
     }
