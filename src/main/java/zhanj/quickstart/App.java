@@ -1,12 +1,13 @@
 package zhanj.quickstart;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +21,7 @@ import org.apache.commons.cli.Options;
 
 public class App {
     /**
-     * java Quickstart --group-id=zhanj --artifact-id=template --version=1.0-SNAPSHOT --spring-boot-version=2.0.5
+     * java Quickstart --group-id=zhanj --artifact-id=template --version=1.0-SNAPSHOT  --main-class=App
      * @param args
      */
     public static void main( String[] args) {
@@ -84,7 +85,7 @@ public class App {
         if (artifactId.length() > 20 || !artifactId.matches("[a-zA-Z0-9\\-]+")) {
             return "'artifactId' consists of characters from 'a-z A-Z -' and can not be more than 20 characters";
         }
-        if (groupId.length() > 32 || !groupId.matches("[a-zA-Z0-9\\.]+")) {
+        if (groupId.length() > 32 || !groupId.matches("[a-zA-Z0-9.]+")) {
             return "'groupId' consists of characters from 'a-z A-Z .' and can not be more than 32 characters";
         }
         if (mainClass.length() > 15 || !mainClass.matches("[A-Z]+[a-zA-Z0-9]*")) {
@@ -98,6 +99,9 @@ public class App {
 
     private static String readResourceFile(String path) throws IOException {
         InputStream stream = ClassLoader.getSystemResourceAsStream(path);
+        if (stream == null) {
+            throw new IOException("failed to read file " + path);
+        }
         StringBuilder result = new StringBuilder();
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             String line;
@@ -108,24 +112,13 @@ public class App {
         return result.toString();
     }
 
-    private static void createDirectory(String dir) throws Exception {
-        File file = new File(dir);
-        if (file.exists()) {
-            throw new Exception(String.format("file or directory with the name '%s' already exists", dir));
-        }
-        if (file.isFile()) {
-            throw new Exception(String.format("failed to create directory, because a file with the name '%s' already exists", dir));
-        }
-        if (!file.mkdirs()) {
-            throw new Exception("failed to create directory " + dir);
-        }
+    private static void createDirectory(String dir) throws IOException {
+    	Files.createDirectories(Paths.get(dir));
     }
 
     private static void writeToFile(String content, String filePath) throws IOException {
-        FileWriter writer = new FileWriter(filePath);
-        writer.write(content);
-        writer.flush();
-        writer.close();
+        Path file = Paths.get(filePath);
+        Files.write(file, content.getBytes());
     }
 
     private static String generate(String template, List<Param> params, Map<String,String> model) {
